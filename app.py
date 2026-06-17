@@ -1425,4 +1425,90 @@ elif role == "Admin":
                 st.metric(
                     "Damaged Count",
                     len(damaged_items)
-                )      
+                )
+
+            st.divider()
+
+            st.subheader(
+                "🛠 Update Borrowed Resource Condition"
+            )
+
+            active_borrowed = []
+
+            for rental in st.session_state.rentals:
+
+                if rental["status"] == "Active":
+
+                    active_borrowed.append(
+                        rental
+                    )
+
+            if len(active_borrowed) == 0:
+
+                st.info(
+                    "No currently borrowed resources available to update."
+                )
+
+            else:
+
+                borrowed_options = [
+                    f"{r['rental_code']} - {r['item']} ({r['student']})"
+                    for r in active_borrowed
+                ]
+
+                selected_borrowed = st.selectbox(
+                    "Select Borrowed Resource",
+                    borrowed_options
+                )
+
+                selected_rental = None
+
+                for rental in active_borrowed:
+
+                    option_text = (
+                        f"{rental['rental_code']} - {rental['item']} ({rental['student']})"
+                    )
+
+                    if option_text == selected_borrowed:
+
+                        selected_rental = rental
+                        break
+
+                if selected_rental is not None:
+
+                    status_choice = st.radio(
+                        "Mark Resource As",
+                        ["Damaged", "Not Damaged"]
+                    )
+
+                    if st.button(
+                        "Update Damage Status"
+                    ):
+
+                        for resource in st.session_state.resources:
+
+                            if (
+                                resource["item"]
+                                == selected_rental["item"]
+                            ):
+
+                                resource["condition"] = (
+                                    "Damaged"
+                                    if status_choice == "Damaged"
+                                    else "Good"
+                                )
+                                break
+
+                        selected_rental["damage_status"] = (
+                            status_choice
+                        )
+
+                        add_notification(
+                            selected_rental["student"],
+                            f"Your borrowed item {selected_rental['item']} has been marked as {status_choice}."
+                        )
+
+                        st.success(
+                            f"{selected_rental['item']} marked as {status_choice}."
+                        )
+      
